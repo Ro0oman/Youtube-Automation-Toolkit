@@ -62,16 +62,15 @@ class InsightsEngine:
     @staticmethod
     def suggest_next_video(videos: List[Video]) -> NextVideoIdea:
         if not videos:
-            return NextVideoIdea(topic="Gaming", title="THIS is the FUTURE 😱", why="No data.", goal="1000 views")
+            return NextVideoIdea(topic="Gaming", title="ESTO es el FUTURO 😱", why="No hay datos previos.", goal="1000 vistas")
 
-        # Basic topic extraction from top videos
         top_v = sorted(videos, key=lambda v: v.stats.view_count, reverse=True)[0]
         words = top_v.metadata.title.split()
         topic = words[0] if words else "Gaming"
         
         return NextVideoIdea(
             topic=topic,
-            title=f"THIS {topic} is INSANE 😱",
+            title=f"ESTO sobre {topic} es una LOCURA 😱",
             why=f"Tus vídeos sobre '{topic}' rinden un 40% mejor que el resto.",
             goal=f"Superar las {int(top_v.stats.view_count * 1.2)} vistas"
         )
@@ -81,8 +80,8 @@ class InsightsEngine:
         if not previous: return {}
         evolution = {}
         for metric in ["avg_views", "engagement_rate", "upload_frequency_days"]:
-            curr_val = getattr(current, metric)
-            prev_val = getattr(previous, metric)
+            curr_val = getattr(current, metric, 0)
+            prev_val = getattr(previous, metric, 0)
             if prev_val > 0:
                 growth_pct = ((curr_val - prev_val) / prev_val) * 100
                 evolution[f"{metric}_growth"] = round(growth_pct, 1)

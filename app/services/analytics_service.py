@@ -1,9 +1,9 @@
 from typing import List, Dict, Any, Optional
-from app.domain.models import Video, AnalyticsResult, Channel, Recommendation, ActionDay
+from app.domain.models import Video, AnalyticsResult, Channel, Recommendation, ActionDay, NextVideoIdea
 from app.domain.scoring import ScoreCalculator
 from app.domain.insights import InsightsEngine
 from loguru import logger
-from datetime import datetime, timedelta
+from datetime import datetime
 
 class AnalyticsService:
     def __init__(self, repository: Optional[Any] = None):
@@ -12,12 +12,12 @@ class AnalyticsService:
         self.insights = InsightsEngine()
 
     def analyze_channel(self, channel: Channel, videos: List[Video]) -> AnalyticsResult:
-        logger.info(f"Análisis COACH v4.0 para: {channel.title}")
+        logger.info(f"Análisis ELITE COACH v5.0 para: {channel.title}")
         
         if not videos:
             return self._empty_result(channel.id)
 
-        # 1. Métricas Base
+        # 1. Base Metrics
         views = [v.stats.view_count for v in videos]
         avg_views = sum(views) / len(views)
         
@@ -32,19 +32,18 @@ class AnalyticsService:
                      for i in range(1, len(sorted_videos))]
             upload_frequency = abs(sum(diffs) / len(diffs))
 
-        # 2. Score y Coaching (Spanish)
+        # 2. Score y Interpretraciones Spanish v5.0
         score = self.scorer.calculate_channel_score(channel, avg_views, engagement_rate, upload_frequency)
         interpretations = self.scorer.interpret_metrics(avg_views, engagement_rate, upload_frequency)
 
-        # 3. Insights Avanzados
+        # 3. Evolution Tracking
         previous_analysis = self.repo.get_last_analysis(channel.id) if self.repo else None
         evolution = self.insights.calculate_evolution(
             type('obj', (object,), {"avg_views": avg_views, "engagement_rate": engagement_rate, "upload_frequency_days": upload_frequency}),
             previous_analysis
         )
 
-        # 4. COACH Features v4.0
-        # Plan de 7 días con días reales
+        # 4. COACH Features v5.0
         dias_es = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
         hoy_idx = datetime.now().weekday()
         generic_plan = self.insights.generate_7_day_plan()
@@ -62,6 +61,12 @@ class AnalyticsService:
         next_video = self.insights.suggest_next_video(videos)
         recommendations = self.insights.generate_recommendations(videos, [])
 
+        # Priority Ranking v5.0
+        priorities = []
+        if upload_frequency > 10: priorities.append("Subir 1 vídeo por semana (MÍNIMO)")
+        if engagement_rate < 2.0: priorities.append("Mejorar títulos y Call-to-Action")
+        if not priorities: priorities.append("Mantener el ritmo de crecimiento actual")
+
         result = AnalyticsResult(
             channel_id=channel.id,
             avg_views=round(avg_views, 2),
@@ -73,9 +78,10 @@ class AnalyticsService:
             score=score,
             interpretations=interpretations,
             evolution=evolution,
+            report_path=None,
             action_plan=real_day_plan,
             next_video=next_video,
-            priorities=[f"Prioridad #1: Subir 1 vídeo por semana", f"Prioridad #2: Mejorar engagement", f"Prioridad #3: Títulos en MAYÚSCULAS"]
+            priorities=priorities
         )
 
         if self.repo:
