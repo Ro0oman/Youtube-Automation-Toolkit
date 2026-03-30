@@ -32,7 +32,8 @@ async def analyze_channel(request: ChannelRequest, db: Session = Depends(get_db)
         
         # 3. Generate Report
         report_gen = ReportGenerator()
-        report_gen.generate(channel, result)
+        path = report_gen.generate(channel, result)
+        result.report_path = path
         
         return result
     except Exception as e:

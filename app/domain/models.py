@@ -72,3 +72,4 @@ class AnalyticsResult(BaseModel):
     score: Optional[ChannelScore] = None
     interpretations: Dict[str, MetricInterpretation] = {}
     evolution: Dict[str, Any] = {} # Growth compared to previous analysis
+    report_path: Optional[str] = None
