@@ -1,5 +1,5 @@
-from typing import List, Dict, Any
-from app.models.schemas import Video, AnalyticsResult, Channel
+from typing import List, Dict, Any, Optional
+from app.models.schemas import Video, AnalyticsResult, Channel, Recommendation
 from loguru import logger
 from datetime import datetime, timedelta
 try:
@@ -22,7 +22,8 @@ class AnalyticsService:
                 engagement_rate=0,
                 upload_frequency_days=0,
                 top_videos=[],
-                trends={}
+                trends={},
+                recommendations=[]
             )
 
         if HAS_PANDAS:
@@ -84,8 +85,48 @@ class AnalyticsService:
             engagement_rate=round(engagement_rate, 2),
             upload_frequency_days=round(upload_frequency, 2),
             top_videos=top_videos,
-            trends=trends
+            trends=trends,
+            recommendations=[]
         )
+
+    def generate_niche_recommendations(self, user_videos: List[Video], trending_videos: List[Video]) -> List[Recommendation]:
+        """Generate actionable recommendations based on trending content in the niche"""
+        logger.info("Generating niche recommendations")
+        recommendations = []
+        
+        # 1. Topic Gap Analysis
+        user_titles = " ".join([v.metadata.title.lower() for v in user_videos])
+        
+        for trend in trending_videos[:3]:
+            # Simple keyword check
+            trend_keywords = [word for word in trend.metadata.title.split() if len(word) > 4]
+            is_new_topic = not any(kw.lower() in user_titles for kw in trend_keywords)
+            
+            if is_new_topic:
+                recommendations.append(Recommendation(
+                    title=f"Explora el tema: '{trend.metadata.title[:40]}...'",
+                    reason="Este tema está teniendo mucho éxito en videos similares de otros canales.",
+                    action=f"Considera crear un video sobre '{trend_keywords[0]}' desde tu perspectiva única.",
+                    potential_impact="High"
+                ))
+
+        # 2. Engagement Strategy
+        recommendations.append(Recommendation(
+            title="Optimiza tus Call-to-Action",
+            reason="Los canales con alta tasa de crecimiento suelen pedir likes/subs en los primeros 2 minutos.",
+            action="Prueba añadir un recordatorio visual de suscripción a mitad del video.",
+            potential_impact="Medium"
+        ))
+
+        # 3. Community Interaction
+        recommendations.append(Recommendation(
+            title="Usa la pestaña de Comunidad",
+            reason="Interactuar con encuestas aumenta un 20% la visibilidad de tus próximos videos.",
+            action="Haz una encuesta preguntando qué tema quieren ver a continuación.",
+            potential_impact="Medium"
+        ))
+
+        return recommendations[:5]
 
     def _calculate_trends(self, df: Any) -> Dict[str, Any]:
         if not HAS_PANDAS:

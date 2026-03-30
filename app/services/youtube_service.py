@@ -104,3 +104,27 @@ class YouTubeService:
             videos.append(video)
             
         return videos
+
+    def search_videos(self, query: str, max_results: int = 10, published_after: Optional[str] = None) -> List[Video]:
+        """Search for videos by keyword/topic"""
+        logger.info(f"Searching for videos with query: {query}")
+        
+        search_params = {
+            "part": "snippet",
+            "q": query,
+            "type": "video",
+            "maxResults": max_results,
+            "order": "viewCount"
+        }
+        
+        if published_after:
+            search_params["publishedAfter"] = published_after
+            
+        request = self.youtube.search().list(**search_params)
+        response = request.execute()
+        
+        video_ids = [item["id"]["videoId"] for item in response.get("items", [])]
+        if not video_ids:
+            return []
+            
+        return self._get_video_details(video_ids)

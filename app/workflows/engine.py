@@ -67,6 +67,30 @@ class WorkflowEngine:
                 raise ValueError("Context missing channel or analysis for report")
             self.context["report_path"] = self.report_service.generate_report(channel, analysis)
             
+        elif step.action == "generate_recommendations":
+            videos = self.context.get("videos")
+            if not videos:
+                raise ValueError("Context missing videos for generating recommendations")
+            
+            # Step 1: Extract keywords from user's top videos
+            analysis = self.context.get("analysis")
+            top_videos = analysis.top_videos if analysis else videos[:5]
+            query = " ".join([v.metadata.title.split()[0] for v in top_videos[:2]])
+            
+            # Step 2: Search for trending videos in this niche
+            # (Last 30 days)
+            from datetime import datetime, timedelta
+            last_30_days = (datetime.now() - timedelta(days=30)).isoformat() + "Z"
+            
+            trending = self.youtube_service.search_videos(query=query, max_results=5, published_after=last_30_days)
+            
+            # Step 3: Generate the actual recommendations
+            recs = self.analytics_service.generate_niche_recommendations(videos, trending)
+            
+            if analysis:
+                analysis.recommendations = recs
+            self.context["recommendations"] = recs
+
         elif step.action == "send_notification":
             message_template = step.params.get("message", "Workflow {name} completed")
             # Simple template replacement

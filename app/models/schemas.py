@@ -34,6 +34,12 @@ class Channel(BaseModel):
     published_at: datetime = Field(alias="publishedAt")
     stats: ChannelStats
 
+class Recommendation(BaseModel):
+    title: str
+    reason: str
+    action: str
+    potential_impact: str # e.g. "High", "Medium"
+
 class AnalyticsResult(BaseModel):
     channel_id: str
     avg_views: float
@@ -41,6 +47,7 @@ class AnalyticsResult(BaseModel):
     upload_frequency_days: float
     top_videos: List[Video]
     trends: Dict[str, Any]
+    recommendations: List[Recommendation] = []
 
 class WorkflowStep(BaseModel):
     name: str

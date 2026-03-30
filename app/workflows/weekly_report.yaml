@@ -4,14 +4,16 @@ steps:
   - name: Get Channel Info
     action: fetch_channel
     params:
-      channel_id: UC_x5XG1OV2P6uZZ5FSM9Ttw # Example: Google Developers
+      channel_id: UCp6mySOpP-MrCRzMozlWUUQ
   - name: Fetch Latest Videos
     action: fetch_videos
     params:
-      channel_id: UC_x5XG1OV2P6uZZ5FSM9Ttw
+      channel_id: UCp6mySOpP-MrCRzMozlWUUQ
       max_results: 20
   - name: Analyze Performance
     action: analyze_stats
+  - name: Generate Niche Recommendations
+    action: generate_recommendations
   - name: Generate Visual Report
     action: generate_report
   - name: Notify Team
