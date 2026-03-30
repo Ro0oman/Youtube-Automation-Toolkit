@@ -8,7 +8,6 @@ venv/
 # Reports & Data
 reports/
 !reports/.gitkeep
-*.png
 !app/templates/*.html
 
 # Database
