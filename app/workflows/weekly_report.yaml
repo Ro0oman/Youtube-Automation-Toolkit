@@ -1,0 +1,20 @@
+name: Weekly Channel Report
+description: Fetches channel stats, analyzes trends, and generates a report.
+steps:
+  - name: Get Channel Info
+    action: fetch_channel
+    params:
+      channel_id: UC_x5XG1OV2P6uZZ5FSM9Ttw # Example: Google Developers
+  - name: Fetch Latest Videos
+    action: fetch_videos
+    params:
+      channel_id: UC_x5XG1OV2P6uZZ5FSM9Ttw
+      max_results: 20
+  - name: Analyze Performance
+    action: analyze_stats
+  - name: Generate Visual Report
+    action: generate_report
+  - name: Notify Team
+    action: send_notification
+    params:
+      message: "Report generated for {channel_name}! Avg Views: {avg_views}"
