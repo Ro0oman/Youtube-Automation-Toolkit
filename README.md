@@ -1,84 +1,65 @@
-# YouTube Automation Toolkit 🚀
+# 🚀 YouTube Intelligence Suite v3.0
 
-A modular, production-ready Python automation system for the YouTube Data API.
+A professional, production-ready framework for YouTube channel analytics, strategic insights, and automated reporting. Built with **FastAPI**, **SQLAlchemy**, and **Clean Architecture** to demonstrate high-level engineering standards.
 
-## 🌟 Features
+![Dashboard Preview](https://via.placeholder.com/1000x500/f8fafc/ff0000?text=YouTube+Intelligence+v3+SaaS+Dashboard)
 
-*   **YouTube API Integration**: Fetch channel and video metadata with pagination support.
-*   **Analytics Engine**: Calculate average views, engagement rate, and upload frequency.
-*   **Workflow Automation**: Run multi-step automations (reports, notifications, monitoring) via YAML/JSON configs.
-*   **Visual Reports**: Generate professional HTML reports with performance charts.
-*   **Multi-Channel Notifications**: Send alerts via Slack and Telegram webhooks.
-*   **Background Scheduler**: Schedule periodic workflows using APScheduler.
-*   **FastAPI REST Interface**: Clean API endpoints for manual triggers and status monitoring.
+## ✨ Features
 
-## 🛠️ Tech Stack
+- **🧠 Domain-Driven Scoring**: Automatically calculates a 0-10 "Channel Health Score" based on engagement, consistency, and benchmark performance.
+- **📈 Historical Evolution**: Tracks performance over time using SQLite. Detects growth trends (e.g., "Engagement is up 12% vs last month").
+- **💡 Strategic Insights**: Identifies "Topic Gaps" by comparing your channel with trending competitors and suggests high-impact video ideas.
+- **📄 SaaS-Grade Reports**: Generates premium HTML dashboards with color-coded status pills and actionable advice cards.
+- **🌐 RESTful API**: Fully documented FastAPI backend with endpoints for analysis, history, and report management.
+- **🐳 Production-Ready**: Includes a multi-stage Dockerfile and full unit testing suite.
 
-*   **Backend**: Python, FastAPI
-*   **Validation**: Pydantic v2
-*   **API Client**: google-api-python-client
-*   **Data Analysis**: Pandas, Matplotlib
-*   **Automation**: APScheduler, PyYAML
-*   **Logging**: Loguru
+## 🏗️ Architecture
+
+The project follows a **Layered Architecture** to ensure maintainability and testability:
+
+- `app/api`: FastAPI routers and endpoints.
+- `app/domain`: Core business logic, scoring rules, and data entities.
+- `app/infra`: Database repository (SQLAlchemy), YouTube client, and Report engine.
+- `app/core`: Centralized configuration and logging.
 
 ## 🚀 Getting Started
 
-### 1. Prerequisites
-*   Python 3.10+
-*   YouTube Data API Key ([Google Cloud Console](https://console.cloud.google.com/))
-
-### 2. Installation
+### ⚡ Option 1: One-Click Demo (Recommended for Recruiters)
+Run the system immediately without an API Key to see a "Perfect Showcase" report:
 ```bash
-# Clone the repository
-# git clone ...
-# cd youtube-automation-toolkit
+python demo.py
+```
 
-# Install dependencies
+### 🐍 Option 2: Local Setup
+1. **Clone & Install**:
+```bash
 pip install -r requirements.txt
 ```
-
-### 3. Configuration
-Rename `.env.example` to `.env` and fill in your API keys:
-```env
-YOUTUBE_API_KEY=your_key_here
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+2. **Configure Environment**:
+Create a `.env` file from the example:
+```bash
+cp .env.example .env
+# Add your YOUTUBE_API_KEY
 ```
-
-### 4. Running the Application
+3. **Run the API**:
 ```bash
 python -m app.main
 ```
-The API will be available at `http://localhost:8000`. Explore documentation at `/docs`.
+4. **Interactive Docs**:
+Navigate to `http://localhost:8000/docs` to test the endpoints.
 
-## 🤖 Workflow Example
-
-Define your automation in `app/workflows/weekly_report.yaml`:
-```yaml
-name: Weekly Channel Report
-steps:
-  - name: Get Channel Info
-    action: fetch_channel
-    params: { channel_id: "UC_x5..." }
-  - name: Analyze Performance
-    action: analyze_stats
-  - name: Generate Visual Report
-    action: generate_report
+## 🐳 Docker Support
+Run the entire suite inside a container:
+```bash
+docker build -t yt-intelligence .
+docker run -p 8000:8000 --env-file .env yt-intelligence
 ```
 
 ## 🧪 Testing
+Run the domain logic tests:
 ```bash
-pytest
+pytest app/tests/test_domain.py
 ```
 
-## 📂 Project Structure
-```text
-youtube-automation/
-├── app/
-│   ├── main.py            # FastAPI entry point
-│   ├── services/          # Business logic (YouTube, Analytics, Reports)
-│   ├── workflows/         # Workflow engine and example configs
-│   ├── models/            # Pydantic schemas
-│   └── templates/         # HTML report templates
-├── reports/               # Generated results
-└── tests/                 # Unit tests
-```
+---
+Powered by **YouTube Intelligence Suite v3.0** | Designed for Growth.
