@@ -2,7 +2,7 @@
 
 A professional, production-ready framework for YouTube channel analytics, strategic insights, and automated reporting. Built with **FastAPI**, **SQLAlchemy**, and **Clean Architecture** to demonstrate high-level engineering standards.
 
-![Dashboard Preview](https://via.placeholder.com/1000x500/f8fafc/ff0000?text=YouTube+Intelligence+v3+SaaS+Dashboard)
+![Dashboard Preview](appImageExample.png)
 
 ## ✨ Features
 
