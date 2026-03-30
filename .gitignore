@@ -7,10 +7,15 @@ venv/
 
 # Reports & Data
 reports/
-data/
+!reports/.gitkeep
 *.png
-*.html
+!app/templates/*.html
+
+# Database
+*.db
+*.sqlite
 
 # IDE
 .vscode/
 .idea/
+.gemini/
