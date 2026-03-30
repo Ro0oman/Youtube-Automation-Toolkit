@@ -45,7 +45,9 @@ class Recommendation(BaseModel):
     reason: str
     action: str
     potential_impact: str # e.g. "High", "Medium"
-    category: str = "Growth" # Growth, Strategy, Optimization
+    category: str = "Growth" 
+    what_it_means: Optional[str] = None # Added for v4.0 Coach
+    concrete_steps: List[str] = [] # Added for v4.0 Coach
 
 class MetricInterpretation(BaseModel):
     value: Any
@@ -53,12 +55,27 @@ class MetricInterpretation(BaseModel):
     label: str
     benchmark: Optional[str] = None
     note: Optional[str] = None
+    what_it_means: Optional[str] = None # v4.0
+    target_value: Optional[str] = None # v4.0
+    action_priority: str = "Medium" # v4.0
 
 class ChannelScore(BaseModel):
     overall_score: float # 0 to 10
     explanation: str
     biggest_issue: str
     breakdown: Dict[str, float] # e.g. {"Engagement": 4.5, "Consistency": 3.0}
+
+class ActionDay(BaseModel):
+    day: str # e.g. "Lunes"
+    task: str
+    description: str
+    icon: str = "📝"
+
+class NextVideoIdea(BaseModel):
+    topic: str
+    title: str
+    why: str
+    goal: str
 
 class AnalyticsResult(BaseModel):
     channel_id: str
@@ -69,7 +86,12 @@ class AnalyticsResult(BaseModel):
     top_videos: List[Video]
     trends: Dict[str, Any]
     recommendations: List[Recommendation] = []
-    score: Optional[ChannelScore] = None
+    score: Optional[Any] = None # Using Any for complex score object
     interpretations: Dict[str, MetricInterpretation] = {}
-    evolution: Dict[str, Any] = {} # Growth compared to previous analysis
+    evolution: Dict[str, Any] = {}
     report_path: Optional[str] = None
+    
+    # Coach v4.0 Fields
+    action_plan: List[ActionDay] = []
+    next_video: Optional[NextVideoIdea] = None
+    priorities: List[str] = []

@@ -1,153 +1,150 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Intelligence Report - {{ channel.title }}</title>
+    <title>YouTube Content Coach - {{ channel.title }}</title>
     <style>
         :root {
             --primary: #FF0000;
-            --primary-dark: #cc0000;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
+            --accent: #6366f1;
+            --bg: #fdfdfd;
             --text-main: #1e293b;
             --text-muted: #64748b;
             --success: #22c55e;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --info: #3b82f6;
-            --border: #e2e8f0;
+            --info: #0ea5e9;
+            --border: #f1f5f9;
         }
-        body { font-family: 'Inter', -apple-system, sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 40px 20px; line-height: 1.5; }
-        .container { max-width: 1000px; margin: auto; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 40px 20px; }
+        .container { max-width: 1100px; margin: auto; }
         
-        /* Header */
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; background: white; padding: 30px; border-radius: 16px; border: 1px solid var(--border); }
-        .header-info h1 { margin: 0; font-size: 28px; color: var(--text-main); }
-        .header-info p { margin: 8px 0 0; color: var(--text-muted); font-size: 14px; }
-        .score-hero { text-align: center; background: #f1f5f9; padding: 20px; border-radius: 12px; min-width: 150px; }
-        .score-value { font-size: 42px; font-weight: 800; color: var(--primary); display: block; }
-        .score-label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; background: white; padding: 30px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
+        .header-info h1 { margin: 0; font-size: 28px; }
+        .score-hero { text-align: center; background: #fafafa; padding: 15px 30px; border-radius: 15px; border: 1px solid var(--border); }
+        .score-value { font-size: 48px; font-weight: 900; color: var(--primary); line-height: 1; }
 
-        /* Stats Grid */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        .card { background: var(--card-bg); padding: 24px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
-        .card-title { font-size: 14px; font-weight: 600; color: var(--text-muted); }
-        .card-value { font-size: 28px; font-weight: 700; margin: 4px 0; }
-        .card-evolution { font-size: 12px; font-weight: 600; }
-        .evolution-up { color: var(--success); }
-        .evolution-down { color: var(--danger); }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 40px; }
+        .card { background: white; padding: 25px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+        .card-label { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .card-value { font-size: 32px; font-weight: 800; margin-bottom: 5px; }
+        .card-note { font-size: 13px; color: var(--text-muted); background: #f8fafc; padding: 10px; border-radius: 10px; margin-top: 15px; }
         
-        /* Status Pills */
         .status-pill { font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; }
         .status-GOOD { background: #dcfce7; color: #166534; }
         .status-WARNING { background: #fef9c3; color: #854d0e; }
         .status-CRITICAL { background: #fee2e2; color: #991b1b; }
 
-        /* Recommendations & Insights */
-        .section-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .rec-card { border-left: 6px solid var(--info); }
-        .rec-card.impact-High { border-left-color: var(--primary); }
-        .rec-card h4 { margin: 0 0 10px; font-size: 16px; }
-        .rec-tag { font-size: 11px; font-weight: 700; color: var(--info); text-transform: uppercase; margin-bottom: 8px; display: block; }
-        .rec-action { background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 15px; font-style: italic; font-size: 14px; border-left: 3px solid var(--border); }
+        /* Coach Sections */
+        .section-title { font-size: 22px; font-weight: 800; margin: 40px 0 20px; display: flex; align-items: center; gap: 12px; }
+        
+        /* Plan de Acción */
+        .plan-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 15px; margin-bottom: 40px; }
+        .day-card { background: white; border: 1px solid var(--border); border-radius: 15px; padding: 15px; text-align: center; }
+        .day-name { font-weight: 800; font-size: 14px; margin-bottom: 10px; color: var(--accent); }
+        .day-icon { font-size: 24px; margin-bottom: 8px; }
+        .day-task { font-size: 12px; font-weight: 600; line-height: 1.2; }
 
-        /* Chart */
-        .chart-box { margin-top: 40px; text-align: center; }
-        .chart-box img { max-width: 100%; border-radius: 12px; }
+        /* Siguiente Viral */
+        .viral-card { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; border-radius: 25px; padding: 40px; display: flex; align-items: center; gap: 40px; position: relative; }
+        .viral-badge { position: absolute; top: 20px; left: 20px; background: var(--primary); padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 800; }
+        .viral-info h2 { font-size: 36px; margin: 0 0 10px; }
+        .viral-why { font-size: 16px; opacity: 0.8; margin-bottom: 25px; }
+        .viral-goal { border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 10px; display: inline-block; }
 
-        .footer { text-align: center; margin-top: 60px; color: var(--text-muted); font-size: 13px; }
-        .explanation { background: #fffbeb; border: 1px solid #fef3c7; padding: 16px; border-radius: 12px; margin-bottom: 40px; color: #92400e; font-size: 14px; }
+        .target-box { background: #eff6ff; color: #1e40af; border-radius: 10px; padding: 10px; margin-top: 10px; font-size: 13px; font-weight: 700; border: 1px dashed #bfdbfe; }
+        .footer { text-align: center; margin-top: 60px; color: var(--text-muted); font-size: 13px; padding-bottom: 40px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header & Hero Score -->
+        <!-- Header -->
         <header class="header">
             <div class="header-info">
+                <span class="status-pill status-GOOD" style="margin-bottom: 10px; display: inline-block;">YouTube Intelligence Coach v4.0</span>
                 <h1>{{ channel.title }}</h1>
-                <p>{{ channel.description[:180] }}...</p>
-                <div style="margin-top: 15px;">
-                    <span class="status-pill status-GOOD">Pro Analysis Active</span>
-                    <span style="font-size: 12px; color: var(--text-muted); margin-left: 10px;">ID: {{ channel.id }}</span>
-                </div>
+                <p style="color: var(--text-muted); margin-top: 5px;">{{ result.score.explanation }}</p>
             </div>
             <div class="score-hero">
-                <span class="score-label">Channel Health</span>
-                <span class="score-value">{{ result.score.overall_score }}</span>
-                <span style="font-size: 11px; font-weight: 600;">/ 10</span>
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Salud del Canal</span>
+                <div class="score-value">{{ result.score.overall_score }}</div>
+                <span style="font-size: 14px; color: var(--text-muted);">de 10 puntos</span>
             </div>
         </header>
 
-        <!-- Explainable Insight -->
-        <div class="explanation">
-            <strong>🧠 Strategic Summary:</strong> {{ result.score.explanation }}
+        <!-- Viral Next Hit -->
+        {% if result.next_video %}
+        <div class="viral-card">
+            <span class="viral-badge">🔥 TU PRÓXIMO ÉXITO VIRAL</span>
+            <div class="viral-info">
+                <h2>{{ result.next_video.title }}</h2>
+                <p class="viral-why"><strong>¿Por qué?</strong> {{ result.next_video.why }}</p>
+                <div class="viral-goal">🎯 <strong>Meta:</strong> {{ result.next_video.goal }}</div>
+            </div>
+            <div style="font-size: 80px;">💡</div>
         </div>
+        {% endif %}
 
-        <!-- Metrics Dashboard -->
-        <div class="grid">
+        <!-- Metrics Grid -->
+        <h3 class="section-title">📊 Diagnóstico Detallado</h3>
+        <div class="dashboard-grid">
+            {% for key, metric in result.interpretations.items() %}
             <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Engagement</span>
-                    <span class="status-pill status-{{ result.interpretations.engagement.status.value }}">{{ result.interpretations.engagement.status.value }}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <span class="card-label">{{ metric.label }}</span>
+                    <span class="status-pill status-{{ metric.status.value }}">{{ metric.status.value }}</span>
                 </div>
-                <div class="card-value">{{ result.interpretations.engagement.value }}</div>
-                {% if result.evolution.engagement_rate_growth %}
-                <div class="card-evolution {{ 'evolution-up' if result.evolution.engagement_rate_growth > 0 else 'evolution-down' }}">
-                    {{ '+' if result.evolution.engagement_rate_growth > 0 }}{{ result.evolution.engagement_rate_growth }}% vs last month
+                <div class="card-value">{{ metric.value }}</div>
+                
+                <div class="target-box">
+                    🎯 OBJETIVO: {{ metric.target_value }}
                 </div>
-                {% endif %}
-            </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Avg Views</span>
-                </div>
-                <div class="card-value">{{ result.avg_views | int }}</div>
-                {% if result.evolution.avg_views_growth %}
-                <div class="card-evolution {{ 'evolution-up' if result.evolution.avg_views_growth > 0 else 'evolution-down' }}">
-                    {{ '+' if result.evolution.avg_views_growth > 0 }}{{ result.evolution.avg_views_growth }}% vs last month
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Post Frequency</span>
-                    <span class="status-pill status-{{ result.interpretations.consistency.status.value }}">{{ result.interpretations.consistency.status.value }}</span>
-                </div>
-                <div class="card-value">{{ result.interpretations.consistency.value }}</div>
-                <div style="font-size: 11px; color: var(--text-muted);">Threshold: {{ result.interpretations.consistency.benchmark }}</div>
-            </div>
-        </div>
-
-        <!-- Strategy Section -->
-        <h3 class="section-title">💡 Strategic Roadmaps</h3>
-        <div class="rec-grid">
-            {% for rec in result.recommendations %}
-            <div class="card rec-card impact-{{ rec.potential_impact }}">
-                <span class="rec-tag">{{ rec.category }} | {{ rec.potential_impact }} Impact</span>
-                <h4>{{ rec.title }}</h4>
-                <p style="font-size: 14px; color: var(--text-muted);">{{ rec.reason }}</p>
-                <div class="rec-action">
-                    <strong>Action:</strong> {{ rec.action }}
+                <div class="card-note">
+                    <strong>🤔 ¿Qué significa?</strong><br>
+                    {{ metric.what_it_means }}
                 </div>
             </div>
             {% endfor %}
         </div>
 
-        {% if chart_path %}
-        <div class="chart-box card">
-            <h3 class="section-title">📈 Performance Trajectory</h3>
-            <img src="{{ chart_path }}" alt="Performance Chart">
+        <!-- Action Plan -->
+        <h3 class="section-title">📅 Plan de Acción (7 Días)</h3>
+        <div class="plan-grid">
+            {% for day in result.action_plan %}
+            <div class="day-card">
+                <div class="day-name">{{ day.day }}</div>
+                <div class="day-icon">{{ day.icon }}</div>
+                <div class="day-task">{{ day.task }}</div>
+                <p style="font-size: 10px; color: var(--text-muted); margin-top: 10px;">{{ day.description }}</p>
+            </div>
+            {% endfor %}
         </div>
-        {% endif %}
+
+        <!-- Strategy Cards -->
+        <h3 class="section-title">💡 Consejos del Coach</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            {% for rec in result.recommendations %}
+            <div class="card" style="border-left: 5px solid var(--accent);">
+                <div style="color: var(--accent); font-weight: 800; font-size: 12px; margin-bottom: 10px;">{{ rec.category }} | Prioridad: {{ rec.potential_impact }}</div>
+                <h4 style="margin: 0 0 10px;">{{ rec.title }}</h4>
+                <p style="font-size: 14px; color: var(--text-muted);">{{ rec.reason }}</p>
+                <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-top: 15px;">
+                    <strong>✅ Hazlo ahora:</strong><br>
+                    <ul style="margin: 10px 0 0; padding-left: 20px; font-size: 13px;">
+                    {% for step in rec.concrete_steps %}
+                        <li>{{ step }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
 
         <footer class="footer">
-            <p>Generated via YouTube Intelligence v3.0 Production Suite</p>
-            <p style="opacity: 0.7;">Timestamp: {{ result.timestamp }} | Total Videos Analyzed: {{ channel.stats.video_count }}</p>
+            <p>Generado por YouTube Intelligence Suite v4.0 COACH Edition</p>
+            <p style="opacity: 0.6;">Fecha del Informe: {{ result.timestamp }}</p>
         </footer>
     </div>
 </body>

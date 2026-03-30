@@ -1,5 +1,5 @@
 from typing import List, Dict, Any, Optional
-from app.domain.models import Video, AnalyticsResult, Channel, Recommendation
+from app.domain.models import Video, AnalyticsResult, Channel, Recommendation, ActionDay
 from app.domain.scoring import ScoreCalculator
 from app.domain.insights import InsightsEngine
 from loguru import logger
@@ -12,12 +12,12 @@ class AnalyticsService:
         self.insights = InsightsEngine()
 
     def analyze_channel(self, channel: Channel, videos: List[Video]) -> AnalyticsResult:
-        logger.info(f"Performing deep analysis for channel: {channel.title}")
+        logger.info(f"Análisis COACH v4.0 para: {channel.title}")
         
         if not videos:
             return self._empty_result(channel.id)
 
-        # 1. Base Metrics (Pure Python Implementation)
+        # 1. Métricas Base
         views = [v.stats.view_count for v in videos]
         avg_views = sum(views) / len(views)
         
@@ -32,38 +32,34 @@ class AnalyticsService:
                      for i in range(1, len(sorted_videos))]
             upload_frequency = abs(sum(diffs) / len(diffs))
 
-        # 2. Domain Scoring & Interpretation
+        # 2. Score y Coaching (Spanish)
         score = self.scorer.calculate_channel_score(channel, avg_views, engagement_rate, upload_frequency)
         interpretations = self.scorer.interpret_metrics(avg_views, engagement_rate, upload_frequency)
 
-        # 3. Insights & Evolution
-        # Fetch historical data from repository if available
-        previous_analysis = None
-        if self.repo:
-            previous_analysis = self.repo.get_last_analysis(channel.id)
-            
+        # 3. Insights Avanzados
+        previous_analysis = self.repo.get_last_analysis(channel.id) if self.repo else None
         evolution = self.insights.calculate_evolution(
-            # Simplified object for the engine
-            type('obj', (object,), {
-                "avg_views": avg_views, 
-                "engagement_rate": engagement_rate, 
-                "upload_frequency_days": upload_frequency
-            }),
+            type('obj', (object,), {"avg_views": avg_views, "engagement_rate": engagement_rate, "upload_frequency_days": upload_frequency}),
             previous_analysis
         )
 
-        # 4. Trends (Last 30 days)
-        now = datetime.now(sorted_videos[0].metadata.published_at.tzinfo)
-        last_30_days = [v for v in videos if v.metadata.published_at > (now - timedelta(days=30))]
-        trends = {
-            "recent_videos_count": len(last_30_days),
-            "recent_avg_views": sum(v.stats.view_count for v in last_30_days) / len(last_30_days) if last_30_days else 0,
-            "is_growing": len(last_30_days) > 0
-        }
+        # 4. COACH Features v4.0
+        # Plan de 7 días con días reales
+        dias_es = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+        hoy_idx = datetime.now().weekday()
+        generic_plan = self.insights.generate_7_day_plan()
+        
+        real_day_plan = []
+        for i in range(7):
+            idx = (hoy_idx + i) % 7
+            real_day_plan.append(ActionDay(
+                day=dias_es[idx],
+                task=generic_plan[i].task,
+                description=generic_plan[i].description,
+                icon=generic_plan[i].icon
+            ))
 
-        # 5. Recommendations
-        # (In a real scenario, trending_videos would come from YouTubeService search)
-        # For now we use the engine's internal logic
+        next_video = self.insights.suggest_next_video(videos)
         recommendations = self.insights.generate_recommendations(videos, [])
 
         result = AnalyticsResult(
@@ -72,14 +68,16 @@ class AnalyticsService:
             engagement_rate=round(engagement_rate, 2),
             upload_frequency_days=round(upload_frequency, 2),
             top_videos=sorted(videos, key=lambda v: v.stats.view_count, reverse=True)[:5],
-            trends=trends,
+            trends={},
             recommendations=recommendations,
             score=score,
             interpretations=interpretations,
-            evolution=evolution
+            evolution=evolution,
+            action_plan=real_day_plan,
+            next_video=next_video,
+            priorities=[f"Prioridad #1: Subir 1 vídeo por semana", f"Prioridad #2: Mejorar engagement", f"Prioridad #3: Títulos en MAYÚSCULAS"]
         )
 
-        # 6. Persist if repository is active
         if self.repo:
             self.repo.save_analysis(result, channel, videos)
 
@@ -87,11 +85,6 @@ class AnalyticsService:
 
     def _empty_result(self, channel_id: str) -> AnalyticsResult:
         return AnalyticsResult(
-            channel_id=channel_id,
-            avg_views=0,
-            engagement_rate=0,
-            upload_frequency_days=0,
-            top_videos=[],
-            trends={},
-            recommendations=[]
+            channel_id=channel_id, avg_views=0, engagement_rate=0, upload_frequency_days=0,
+            top_videos=[], trends={}, recommendations=[]
         )
