@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.infra.database import get_db
 from app.infra.repository import AnalyticsRepository
@@ -16,7 +16,7 @@ class ChannelRequest(BaseModel):
     max_results: int = 20
 
 @router.post("/analyze-channel", response_model=AnalyticsResult)
-async def analyze_channel(request: ChannelRequest, db: Session = Depends(get_db)):
+async def analyze_channel(request: ChannelRequest, req: Request, db: Session = Depends(get_db)):
     """Fetch, analyze, and persist channel data"""
     try:
         repo = AnalyticsRepository(db)
@@ -33,7 +33,11 @@ async def analyze_channel(request: ChannelRequest, db: Session = Depends(get_db)
         # 3. Generate Report
         report_gen = ReportGenerator()
         path = report_gen.generate(channel, result)
-        result.report_path = path
+        
+        # Build full URL
+        base_url = str(req.base_url).rstrip("/")
+        filename = os.path.basename(path)
+        result.report_path = f"{base_url}/reports/{filename}"
         
         return result
     except Exception as e:
@@ -47,7 +51,7 @@ async def get_history(channel_id: str, db: Session = Depends(get_db)):
     return history
 
 @router.get("/report/latest/{channel_id}")
-async def get_latest_report(channel_id: str, db: Session = Depends(get_db)):
+async def get_latest_report(channel_id: str, req: Request, db: Session = Depends(get_db)):
     """Get path to the latest generated report"""
     repo = AnalyticsRepository(db)
     last = repo.get_last_analysis(channel_id)
@@ -61,4 +65,5 @@ async def get_latest_report(channel_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Report file not found")
     
     latest_file = sorted(files)[-1]
-    return {"report_path": os.path.join(reports_dir, latest_file)}
+    base_url = str(req.base_url).rstrip("/")
+    return {"report_url": f"{base_url}/reports/{latest_file}"}
