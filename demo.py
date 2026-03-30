@@ -1,74 +1,71 @@
-from unittest.mock import MagicMock, patch
-from datetime import datetime, timedelta
-from app.workflows.engine import WorkflowEngine
-from app.models.schemas import Channel, ChannelStats, Video, VideoMetadata, VideoStats, AnalyticsResult
-from loguru import logger
+import sys
 import os
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock
+from app.domain.models import Channel, ChannelStats, Video, VideoMetadata, VideoStats
+from app.services.analytics_service import AnalyticsService
+from app.infra.report_generator import ReportGenerator
+from app.infra.database import engine, Base, SessionLocal
+from app.infra.repository import AnalyticsRepository
+from loguru import logger
 
-# --- Mock Data Setup ---
+def run_demo():
+    logger.info("🚀 Starting YouTube Intelligence PRO - DEMO MODE")
+    logger.info("No API Key required. Generating showcase data...")
 
-def get_mock_channel(*args, **kwargs):
-    return Channel(
-        id="UC_MOCK_123",
-        title="Python Automation Pro",
-        description="A channel dedicated to Python and Automation.",
+    # 1. Setup Database
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    repo = AnalyticsRepository(db)
+
+    # 2. Setup Mock Data (Perfect Channel)
+    channel = Channel(
+        id="UC_SHOWCASE_123",
+        title="Gaming Excellence Pro",
+        description="The ultimate destination for pro-level gameplay and tutorials.",
         publishedAt=datetime.now() - timedelta(days=365),
-        stats=ChannelStats(viewCount=1500000, subscriberCount=25000, videoCount=120)
+        stats=ChannelStats(viewCount=1500000, subscriberCount=12500, videoCount=84)
     )
 
-def get_mock_videos(*args, **kwargs):
-    return [
-        Video(
+    # Generate some mock videos
+    videos = []
+    base_date = datetime.now()
+    for i in range(10):
+        v_id = f"vid_{i}"
+        videos.append(Video(
             metadata=VideoMetadata(
-                id=f"vid_{i}",
-                title=f"How to automate YouTube with Python - Part {i}",
-                description="Tutorial on YouTube API.",
-                publishedAt=datetime.now() - timedelta(days=i*5),
-                thumbnails={}
+                id=v_id,
+                title=f"HOW TO MASTER THE NEW {['MAP', 'WEAPON', 'AGENT'][i%3]} 🤯",
+                description="Tutorial description...",
+                publishedAt=base_date - timedelta(days=i*4),
+                thumbnails={"default": {"url": ""}},
+                tags=["gaming", "tutorial"]
             ),
-            stats=VideoStats(viewCount=1000 * (10-i), likeCount=50 * (i+1), commentCount=10)
-        ) for i in range(5)
-    ]
+            stats=VideoStats(
+                viewCount=12000 - (i * 800),
+                likeCount=600 - (i * 40),
+                commentCount=45 - (i * 3)
+            )
+        ))
 
-# --- Demo Execution ---
+    # 3. Run Analysis
+    analytics = AnalyticsService(repository=repo)
+    result = analytics.analyze_channel(channel, videos)
 
-@patch('app.services.youtube_service.YouTubeService.get_channel_info', side_effect=get_mock_channel)
-@patch('app.services.youtube_service.YouTubeService.get_videos', side_effect=get_mock_videos)
-@patch('app.services.notification_service.NotificationService.notify')
-def run_demo(mock_notify, mock_videos, mock_channel):
-    logger.info("Starting YouTube Automation Toolkit - Mock Demo")
-    
-    # Ensure reports directory exists
-    os.makedirs("reports", exist_ok=True)
-    
-    # Initialize Engine
-    engine = WorkflowEngine()
-    
-    # Load the example workflow
-    workflow_path = "app/workflows/weekly_report.yaml"
-    if not os.path.exists(workflow_path):
-        logger.error(f"Workflow file {workflow_path} not found!")
-        return
+    # 4. Generate Report
+    report_gen = ReportGenerator()
+    report_path = report_gen.generate(channel, result)
 
-    logger.info(f"Running workflow from file: {workflow_path}")
+    logger.success(f"✅ Demo Analysis Complete!")
+    logger.info(f"📊 Channel Score: {result.score.overall_score}/10")
+    logger.info(f"📄 Report Generated at: {report_path}")
     
-    try:
-        context = engine.run_from_file(workflow_path)
-        
-        logger.success("--- Workflow Results ---")
-        logger.info(f"Channel: {context['channel'].title}")
-        logger.info(f"Avg Views: {context['analysis'].avg_views}")
-        logger.info(f"Engagement Rate: {context['analysis'].engagement_rate}%")
-        logger.info(f"Report Path: {context['report_path']}")
-        
-        # Verify notification was "sent"
-        if mock_notify.called:
-            logger.info(f"Notification Sent: {mock_notify.call_args[0][0]}")
-            
-    except Exception as e:
-        logger.error(f"Demo failed: {e}")
+    db.close()
+    
+    print("\n" + "="*50)
+    print("DEMO SUCCESSFUL")
+    print(f"Open this file in your browser: {os.path.abspath(report_path)}")
+    print("="*50)
 
 if __name__ == "__main__":
-    # Ensure we don't actually try to hit the API by providing a dummy key
-    os.environ["YOUTUBE_API_KEY"] = "MOCK_KEY"
     run_demo()
