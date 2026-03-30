@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     report_output_dir: str = "reports"
     
     # Domain Thresholds
-    min_engagement_threshold: float = 0.02
+    min_engagement_threshold: float = 2.0  # 2.0%
     max_upload_gap_days: int = 10
     
     # Database
